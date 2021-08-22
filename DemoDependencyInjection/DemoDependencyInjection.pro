@@ -5,13 +5,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 
 SOURCES += \
-    abstractdriver.cpp \
+    abstractservice.cpp \
     main.cpp
 
 HEADERS += \
-    abstractdriver.h
+    abstractservice.h
 
-#Add ioc.pri to use Qt Dependency Container functionality
+
 include(../ioc/ioc.pri)
 
 # Default rules for deployment.
