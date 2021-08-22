@@ -12,14 +12,6 @@ DependencyContainer::DependencyContainer(QObject *parent) : QObject(parent)
 DependencyContainer::~DependencyContainer()
 {
     qDebug() << "Dependency container destructor";
-
-    while(!_singletonHash.isEmpty()) {
-        QStringList keys = _singletonHash.keys();
-        QString name = keys.first();
-        QObject* obj = _singletonHash.value(name);
-        _singletonHash.remove(name);
-        delete obj;
-    }
     delete _propertyProvider;
 }
 
@@ -146,7 +138,7 @@ QObject *DependencyContainer::dependency(const QString &name)
     DependencyMeta* meta = _metaByName.value(name);
     const QMetaObject* metaObj = meta->metaObj();
 
-    //Если одиночка, то поискать в уже созданных
+    //If Singleton mode, check if already created
     if (meta->mode() == InstanceMode::Singleton) {
         if (_singletonHash.contains(name)) {
             qDebug() << QString("Singleton object found: %1").arg(name);
@@ -214,8 +206,9 @@ QObject *DependencyContainer::dependency(const QString &name)
         }
 
     }
-    //Добавить одиночку
+    //Save singleton object
     if (meta->mode() == InstanceMode::Singleton) {
+        newObj->setParent(this);
         _singletonHash.insert(name, newObj);
     }
     qDebug() << "Dependency" << name << "successfully instatiated" << "\n";
