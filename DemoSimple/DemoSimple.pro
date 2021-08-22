@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,26 +9,12 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    customproperty.cpp \
-    dbmsmodule.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    mycustom.cpp \
-    postgresmodule.cpp \
-    simpleclass.cpp \
-    sqlitemodule.cpp
+    abstractdriver.cpp \
+    main.cpp
 
 HEADERS += \
-    customproperty.h \
-    dbmsmodule.h \
-    mainwindow.h \
-    mycustom.h \
-    postgresmodule.h \
-    simpleclass.h \
-    sqlitemodule.h
+    abstractdriver.h
 
-FORMS += \
-    mainwindow.ui
 
 include(../ioc/ioc.pri)
 
