@@ -54,6 +54,15 @@ Use `DependencyContainer::registerDependency()` method to register dependency in
       prop2->setName("Postgres properties");
       objContainer->registerSingletonObject(new DependencyMeta("PostgresProps", CLASSMETA(CustomProperty)), prop1);
         
+#### Overriding dependency
+Registered dependency can be overriden simply by registering another dependency by the same name:
+
+    DependencyContainer objContainer = new DependencyContainer(this);
+    //register dependency "mybean"
+    objContainer->registerDependency("mybean",  CLASSMETA(BeanImpl1));
+    //overrides previously registered "mybean" dependency
+    objContainer->registerDependency("mybean",  CLASSMETA(BeanImpl2));
+        
 ### Requesting dependency from container
 *Request dependency by name*
 
@@ -73,6 +82,67 @@ Use `DependencyContainer::registerDependency()` method to register dependency in
 	      MenuItemClass* item = objContainer<MenuItemClass>(name);
 	      menu->addItem(item);
       }
+### Dependency Injection
+To inject dependencies the container uses methods with certain name format. After creating new dependency object container searches for methods with prefix *inject_* in the name. Currently supported two formats of inject method name:
 
-  
+ - *Class member and registered dependency have the same names*
+    void inject_[beanNameToInject](QObject* obj) 
+    	
+ - *Different names of class member and registered dependency*
+void inject_[member]_by_[beanName](QObject* obj)
+
+To avoid errors in inject method name format two macros are defined:
+*For default method-injection:*
+
+	//Macro INJECT(Type, Name)
+	class MyClass: public QObject {
+		Q_OBJECT
+	public:	
+		INJECT(Type,  Name)
+	}
+	//is equivalent to 
+	class My Class: public QObject {
+		Q_OBJECT
+	public:
+	  //Default inject method
+	  void inject_Name(QObject* obj);
+	  Type* _Name;	
+	}
+*For injection into existing class member:*
+
+    //Macro INJECT_INITIALIZE(Type, member, Name)
+    class MyClass: public QObject {
+    	Q_OBJECT
+    public:	
+    	INJECT_INITIALIZE(Type, member, Name)
+    private:
+	    Type* member;	
+    }
+    //is equivalent to 
+    class My Class: public QObject {
+    	Q_OBJECT
+    public:
+      //Default inject "Name" into "member"
+      void inject_member_by_Name(QObject* obj){...}
+      Type* Member;	
+    }
+### Property injection
+To inject property value into dependency the following steps needed:
+*Define QObject property:*
+
+    class CustomPostgres : public MyCustom
+    {
+      Q_OBJECT
+      Q_PROPERTY(QString author READ author WRITE  setAuthor)
+      ...
+    }
+    
+*Initialize property with value:*
+
+    DependencyContainer* objContainer  =  new  DependencyContainer(this);
+    objContainer->registerDependency("postgres", CLASSMETA(CustomPostgres));
+    //Bean specific property value
+    objContainer->setPropertyValue("postgres.author",  "John  Doe");
+    //or default property value
+    objContainer->setPropertyValue("author",  "John  Doe");
 
