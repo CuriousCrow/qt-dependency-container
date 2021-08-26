@@ -83,13 +83,9 @@ Registered dependency can be overriden simply by registering another dependency 
 	      menu->addItem(item);
       }
 ### Dependency Injection
-To inject dependencies the container uses methods with certain name format. After creating new dependency object container searches for methods with prefix *inject_* in the name. Currently supported two formats of inject method name:
+To inject dependencies the container uses methods with certain name format. After creating new dependency object container searches for methods with prefix *inject_* in the name. DependencyContainer class currently supports certain inject method name format:
 
- - *Class member and registered dependency have the same names*
     void inject_[beanNameToInject](QObject* obj) 
-    	
- - *Different names of class member and registered dependency*
-void inject_[member]_by_[beanName](QObject* obj)
 
 To avoid errors in inject method name format two macros are defined:
 *For default method-injection:*
@@ -123,7 +119,7 @@ To avoid errors in inject method name format two macros are defined:
     	Q_OBJECT
     public:
       //Default inject "Name" into "member"
-      void inject_member_by_Name(QObject* obj){...}
+      void inject_Name_into_member(QObject* obj){...}
       Type* Member;	
     }
 ### Property injection
