@@ -28,6 +28,9 @@ class MainService : public AbstractService
     Q_OBJECT
 public:
     Q_INVOKABLE MainService();
+    //Inject method format:
+    //inject_[beanName](QObject* obj)
+
     //Create injection method inject_childService(QObject* obj)
     //and class member AbstractService* _childService
     INJECT(AbstractService*, childService)
