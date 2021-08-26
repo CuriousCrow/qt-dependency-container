@@ -182,11 +182,7 @@ QObject *DependencyContainer::dependency(const QString &name)
             //Not injectMethod
             if (injectTokens.size() < 2)
                 continue;
-            QString beanName;
-            if (injectTokens.contains("by"))
-                beanName = injectTokens[injectTokens.indexOf("by") + 1];
-            else
-                beanName = injectTokens[1];
+            QString beanName = injectTokens[1];
             QObject* dependencyObj = dependency(beanName);
             if (!dependencyObj) {
                 Q_ASSERT_X(!_errorOnInjectFail, "DependencyContainer::dependency()", "Field injection failed. Fix the bug or disable errorOnInjectFail flag.");

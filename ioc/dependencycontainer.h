@@ -11,7 +11,7 @@
 
 #define INJECT_PREFIX "inject_"
 #define INJECT(Type, Name) Type _##Name; Q_INVOKABLE void inject_##Name(QObject* obj){ _##Name = static_cast<Type>(obj); }
-#define INJECT_INITIALIZE(Type, Member, Name) Q_INVOKABLE void inject_##Member##_by_##Name(QObject* obj){ Member = static_cast<Type>(obj); }
+#define INJECT_INITIALIZE(Type, Member, Name) Q_INVOKABLE void inject_##Name##_into_##Member(QObject* obj){ Member = static_cast<Type>(obj); }
 #define CLASS(Type) Type::staticMetaObject.className()
 #define CLASSMETA(Type) &Type::staticMetaObject
 
@@ -81,20 +81,24 @@ class DependencyContainer : public QObject
 public:
     explicit DependencyContainer(QObject *parent = nullptr);
     virtual ~DependencyContainer();
+    //Registering
     DependencyMeta* registerDependency(DependencyMeta* meta);
     DependencyMeta* registerDependency(QString name, const QMetaObject* metaObj, InstanceMode mode = Singleton);
     DependencyMeta* registerSingletonObject(DependencyMeta* meta, QObject* object);
+    //Management
     bool contains(const QString &name);
     void removeSingleton(QString name);
     void removeDependency(QString name);
+    //Container settings
     void setPropertyProvider(AbstractPropertyProvider *propertyProvider);
     void setErrorOnInjectFail(bool value);
     void setPropertyValue(QString propName, QVariant propValue);
+    //Dependency info
     QStringList allMetaInfo();
     QStringList allSingletonInfo();
-
     QStringList namesByClass(QString className);
 
+    //Dependency request
     QObject* dependency(const QString &className, const QVariantHash &params);
     QObject* dependency(const QString &name);
 
