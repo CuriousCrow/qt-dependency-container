@@ -3,8 +3,8 @@ DEPENDPATH += $$PWD
 
 SOURCES += \
     $$PWD/dependencycontainer.cpp \
-    $$PWD/settingspropertyprovider.cpp
+    $$PWD/settingspropertystore.cpp
 
 HEADERS += \
     $$PWD/dependencycontainer.h \
-    $$PWD/settingspropertyprovider.h
+    $$PWD/settingspropertystore.h
