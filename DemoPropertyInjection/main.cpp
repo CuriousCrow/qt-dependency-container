@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include "dependencycontainer.h"
 #include "abstractservice.h"
-#include "settingspropertyprovider.h"
+#include "settingspropertystore.h"
 
 //Dependency bean-names
 #define B_SERVICE_ONE "beanOne"

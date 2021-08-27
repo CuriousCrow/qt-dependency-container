@@ -50,10 +50,10 @@ private:
     void addSuperClass(const QMetaObject *metaObj, QStringList &list) const;
 };
 
-class AbstractPropertyProvider
+class AbstractPropertyStore
 {
 public:
-    virtual ~AbstractPropertyProvider();
+    virtual ~AbstractPropertyStore();
 
     virtual void init(const QVariantHash &props) = 0;
     virtual void setValue(QString propName, QVariant propValue) = 0;
@@ -62,7 +62,7 @@ public:
     virtual void reset() = 0;
 };
 
-class VariantHashPropertyProvider : public AbstractPropertyProvider
+class VariantHashPropertyStore : public AbstractPropertyStore
 {
     // AbstractPropertyProvider interface
 public:
@@ -90,7 +90,7 @@ public:
     void removeSingleton(QString name);
     void removeDependency(QString name);
     //Container settings
-    void setPropertyProvider(AbstractPropertyProvider *propertyProvider);
+    void setPropertyProvider(AbstractPropertyStore *propertyProvider);
     void setErrorOnInjectFail(bool value);
     void setPropertyValue(QString propName, QVariant propValue);
     //Dependency info
@@ -126,7 +126,7 @@ private:
     QHash<QString, DependencyMeta*> _metaByName; //itemByName
     QMultiHash<QString, DependencyMeta*> _metaByClass;
     QHash<QString, QObject*> _singletonHash; //all instaciated singletons
-    AbstractPropertyProvider* _propertyProvider;
+    AbstractPropertyStore* _propertyProvider;
     bool _errorOnInjectFail = true;
 };
 

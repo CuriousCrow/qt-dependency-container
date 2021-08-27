@@ -6,7 +6,7 @@
 DependencyContainer::DependencyContainer(QObject *parent) : QObject(parent)
 {
     qDebug() << "Dependency container constructor";
-    _propertyProvider = new VariantHashPropertyProvider();
+    _propertyProvider = new VariantHashPropertyStore();
 }
 
 DependencyContainer::~DependencyContainer()
@@ -67,7 +67,7 @@ void DependencyContainer::removeDependency(QString name)
     _singletonHash.remove(name);
 }
 
-void DependencyContainer::setPropertyProvider(AbstractPropertyProvider *propertyProvider)
+void DependencyContainer::setPropertyProvider(AbstractPropertyStore *propertyProvider)
 {
     delete _propertyProvider;
     _propertyProvider = propertyProvider;
@@ -311,30 +311,30 @@ void DependencyMeta::addSuperClass(const QMetaObject *metaObj, QStringList &list
     }
 }
 
-void VariantHashPropertyProvider::init(const QVariantHash &props)
+void VariantHashPropertyStore::init(const QVariantHash &props)
 {
     Q_UNUSED(props)
 }
 
-void VariantHashPropertyProvider::setValue(QString propName, QVariant propValue)
+void VariantHashPropertyStore::setValue(QString propName, QVariant propValue)
 {
     _propHash.insert(propName, propValue);
 }
 
-bool VariantHashPropertyProvider::contains(QString propName)
+bool VariantHashPropertyStore::contains(QString propName)
 {
     return _propHash.contains(propName);
 }
 
-QVariant VariantHashPropertyProvider::value(QString propName)
+QVariant VariantHashPropertyStore::value(QString propName)
 {
     return _propHash.value(propName);
 }
 
-void VariantHashPropertyProvider::reset()
+void VariantHashPropertyStore::reset()
 {
 }
 
-AbstractPropertyProvider::~AbstractPropertyProvider()
+AbstractPropertyStore::~AbstractPropertyStore()
 {
 }
