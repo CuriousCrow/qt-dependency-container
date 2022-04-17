@@ -8,6 +8,7 @@
 #define BEAN_NAME "bean"
 #define CHILD_BEAN "child"
 #define COMPLEX_BEAN_NAME "complexBean"
+#define CONSTRUCTOR_ARG_BEAN_NAME "constructorArgBean"
 
 class InjectTest : public QObject
 {
@@ -22,6 +23,7 @@ private slots:
     void testPrototype();
     void testExternalSingleton();
     void testInject();
+    void testConstructorArg();
 };
 
 InjectTest::InjectTest()
@@ -71,6 +73,17 @@ void InjectTest::testInject()
 
     TestComplexBean* complexObj = ioc.dependency<TestComplexBean>(COMPLEX_BEAN_NAME);
     Q_ASSERT(complexObj->testChildMethod() == CLASS(TestSimpleBean));
+}
+
+void InjectTest::testConstructorArg()
+{
+    SimpleObject* simpleObj = new SimpleObject();
+
+    DependencyContainer ioc;
+    ioc.registerDependency(CONSTRUCTOR_ARG_BEAN_NAME, CLASSMETA(TestNoDefaultConstructorBean));
+    TestNoDefaultConstructorBean* bean
+            = ioc.dependency<TestNoDefaultConstructorBean>(CONSTRUCTOR_ARG_BEAN_NAME, simpleObj);
+    Q_ASSERT(bean != nullptr);
 }
 
 QTEST_APPLESS_MAIN(InjectTest)

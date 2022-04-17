@@ -110,7 +110,7 @@ QStringList DependencyContainer::namesByClass(QString className)
     return resList;
 }
 
-QObject *DependencyContainer::dependency(const QString &className, const QVariantHash &params)
+QObject *DependencyContainer::dependency(const QString &className, const QVariantHash &params, const QObject *arg)
 {
     qDebug() << "Dependency request of class:" << className;
     if (!_metaByClass.contains(className)) {
@@ -120,15 +120,15 @@ QObject *DependencyContainer::dependency(const QString &className, const QVarian
     QList<DependencyMeta*> metaList = _metaByClass.values(className);
     foreach(DependencyMeta* meta, metaList) {
         if (meta->exactClassMatch(className))
-            return dependency(meta->name());
+            return dependency(meta->name(), arg);
         if (meta->hasMatch(params))
-            return dependency(meta->name());
+            return dependency(meta->name(), arg);
     }
     qWarning() << "Meta object not registered:" << className << params;
     return nullptr;
 }
 
-QObject *DependencyContainer::dependency(const QString &name)
+QObject *DependencyContainer::dependency(const QString &name, const QObject *arg)
 {
     qDebug() << "Dependency request:" << name;
     if (!_metaByName.contains(name)) {
@@ -151,20 +151,32 @@ QObject *DependencyContainer::dependency(const QString &name)
     }
 
     //Check for default constructor
-    bool hasDefaultConstructor = false;
+    bool hasMatchConstructor = false;
+    QByteArray paramType = 0;
     for(int i=0; i<metaObj->constructorCount(); i++) {
-        if (metaObj->constructor(i).parameterCount() == 0) {
-            hasDefaultConstructor = true;
-            break;
+        QMetaMethod ctor = metaObj->constructor(i);
+        if (arg == nullptr) {
+            if (ctor.parameterCount() == 0) {
+                hasMatchConstructor = true;
+                break;
+            }
+        }
+        else if (ctor.parameterCount() > 0) {
+            QString argType = QString::fromLatin1(ctor.parameterTypes().at(0)).remove("*").trimmed();
+            paramType = ctor.parameterTypes().at(0);
+            if (arg->metaObject()->className() == argType) {
+                hasMatchConstructor = true;
+                break;
+            }
         }
     }
-    if (!hasDefaultConstructor) {
-        qWarning() << QString("No default constructor for class %1 or it has not been marked with Q_INVOKABLE macro")
+    if (!hasMatchConstructor) {
+        qWarning() << QString("No matching constructor for class %1 or it has not been marked with Q_INVOKABLE macro")
                       .arg(metaObj->className());
         return nullptr;
     }
 
-    QObject* newObj = metaObj->newInstance();
+    QObject* newObj = metaObj->newInstance(QGenericArgument(paramType, &arg));
     newObj->setObjectName(meta->name());
     injectProperties(newObj, name);
     if (!newObj) {

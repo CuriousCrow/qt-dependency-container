@@ -1,4 +1,5 @@
 #include "testbeans.h"
+#include <QDebug>
 
 TestComplexBean::TestComplexBean(QObject *parent) : QObject(parent)
 {
@@ -29,3 +30,14 @@ QString TestSimpleBean::testMethod()
     return QString::fromLatin1(CLASS(TestSimpleBean));
 }
 
+
+TestNoDefaultConstructorBean::TestNoDefaultConstructorBean(SimpleObject *argObj) : QObject()
+{
+    qDebug() << "Constructor arg: " << argObj->objectName();
+}
+
+SimpleObject::SimpleObject() : QObject()
+{
+    qDebug() << "Simple object constructor";
+    setObjectName("Simple object");
+}

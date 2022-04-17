@@ -99,8 +99,8 @@ public:
     QStringList namesByClass(QString className);
 
     //Dependency request
-    QObject* dependency(const QString &className, const QVariantHash &params);
-    QObject* dependency(const QString &name);
+    QObject* dependency(const QString &className, const QVariantHash &params, const QObject *arg = Q_NULLPTR);
+    QObject* dependency(const QString &name, const QObject *arg = Q_NULLPTR);
 
     template<class T>
     QStringList namesByClass(){
@@ -109,14 +109,14 @@ public:
     }
 
     template<class T>
-    T* dependency(const QVariantHash &params){
+    T* dependency(const QVariantHash &params, const QObject* arg = Q_NULLPTR){
         static_assert (std::is_base_of<QObject,T>::value, ERR_ONLY_QOBJECT);
-        return static_cast<T*>(dependency(CLASS(T), params));
+        return static_cast<T*>(dependency(CLASS(T), params, arg));
     }
     template<class T>
-    T* dependency(const QString &name){
+    T* dependency(const QString &name, const QObject* arg = Q_NULLPTR){
         static_assert (std::is_base_of<QObject,T>::value, ERR_ONLY_QOBJECT);
-        return static_cast<T*>(dependency(name));
+        return static_cast<T*>(dependency(name, arg));
     }
 signals:
 

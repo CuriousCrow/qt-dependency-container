@@ -35,4 +35,18 @@ signals:
 
 };
 
+class SimpleObject : public QObject
+{
+    Q_OBJECT
+public:
+    SimpleObject();
+};
+
+class TestNoDefaultConstructorBean : public QObject
+{
+    Q_OBJECT
+public:
+    Q_INVOKABLE TestNoDefaultConstructorBean(SimpleObject* argObj);
+};
+
 #endif // TESTBEANS_H
