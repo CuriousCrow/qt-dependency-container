@@ -13,10 +13,25 @@ DependencyContainer::~DependencyContainer()
 {
     qDebug() << "Dependency container destructor";
     delete _propertyProvider;
+
+    qDebug() << "Destroying all registered singletons";
+    while(!_singletonHash.isEmpty()) {
+        QStringList keys = _singletonHash.keys();
+        QString name = keys.first();
+        QObject* obj = _singletonHash.value(name);
+        _singletonHash.remove(name);
+        delete obj;
+        qDebug() << name << "deleted!";
+    }
 }
 
 DependencyMeta *DependencyContainer::registerDependency(DependencyMeta *meta)
 {
+    QString checkResult = dependencyCheck(meta);
+    if (!checkResult.isEmpty()) {
+      qDebug() << "Dependency check failed:" << meta << checkResult;
+      return meta;
+    }
     qDebug() << QString("Registering dependency: %1").arg(meta->toString());
     if (contains(meta->name())) {
         qDebug() << QString("Overriding previous %1 dependency").arg(meta->name());
@@ -42,6 +57,8 @@ DependencyMeta *DependencyContainer::registerSingletonObject(DependencyMeta *met
         return nullptr;
     }
     object->setObjectName(meta->name());
+    object->setProperty(PRM_MODE, Singleton);
+    object->setProperty(PRM_BEAN_NAME, meta->name());
     _singletonHash.insert(meta->name(), object);
     return registerDependency(meta);
 }
@@ -164,7 +181,7 @@ QObject *DependencyContainer::dependency(const QString &name, const QObject *arg
         else if (ctor.parameterCount() > 0) {
             QString argType = QString::fromLatin1(ctor.parameterTypes().at(0)).remove("*").trimmed();
             paramType = ctor.parameterTypes().at(0);
-            if (arg->metaObject()->className() == argType) {
+            if (arg->inherits(argType.toLatin1())) {
                 hasMatchConstructor = true;
                 break;
             }
@@ -177,7 +194,12 @@ QObject *DependencyContainer::dependency(const QString &name, const QObject *arg
     }
 
     QObject* newObj = metaObj->newInstance(QGenericArgument(paramType, &arg));
-    newObj->setObjectName(meta->name());
+    //Meta information of new object
+    newObj->setProperty(PRM_MODE, meta->mode());
+    newObj->setProperty(PRM_BEAN_NAME, meta->name());
+
+    if (meta->mode() == Singleton)
+      newObj->setObjectName(meta->name());
     injectProperties(newObj, name);
     if (!newObj) {
         qWarning() << "Cant instantiate object:" << name;
@@ -194,17 +216,22 @@ QObject *DependencyContainer::dependency(const QString &name, const QObject *arg
             //Not injectMethod
             if (injectTokens.size() < 2)
                 continue;
-            QString beanName = injectTokens[1];
+            QString beanName;
+            if (injectTokens.contains("by"))
+                beanName = injectTokens[injectTokens.indexOf("by") + 1];
+            else
+                beanName = injectTokens[1];
             QObject* dependencyObj = dependency(beanName);
             if (!dependencyObj) {
                 Q_ASSERT_X(!_errorOnInjectFail, "DependencyContainer::dependency()", "Field injection failed. Fix the bug or disable errorOnInjectFail flag.");
                 continue;
             }
+            newInjectProcessing(dependencyObj, newObj);
             QString argType = QString::fromLatin1(method.parameterTypes().at(0)).remove("*").trimmed();
 
             if (!dependencyObj->inherits(argType.toLatin1())) {
                 QString errStr = "Bean %1: Inject method %2 expects arg type %3 descedant. Found bean (%4) instead";
-                qCritical() << errStr.arg(name).arg(methodName).arg(argType).arg(beanName).arg(dependencyObj->metaObject()->className());
+                qCritical() << errStr.arg(name, methodName, argType, beanName, dependencyObj->metaObject()->className());
                 continue;
             }
 
@@ -214,6 +241,7 @@ QObject *DependencyContainer::dependency(const QString &name, const QObject *arg
         }
 
     }
+    newInstanceProccessing(newObj);
     //Save singleton object
     if (meta->mode() == InstanceMode::Singleton) {
         newObj->setParent(this);
@@ -221,6 +249,34 @@ QObject *DependencyContainer::dependency(const QString &name, const QObject *arg
     }
     qDebug() << "Dependency" << name << "successfully instatiated" << "\n";
     return newObj;
+}
+
+QString DependencyContainer::dependencyCheck(const DependencyMeta *meta)
+{
+  Q_UNUSED(meta)
+  //By default no dependency check
+  return "";
+}
+
+bool DependencyContainer::dependencyFilter(const DependencyMeta *meta)
+{
+  Q_UNUSED(meta)
+  //By default no filter
+  return true;
+}
+
+void DependencyContainer::newInstanceProccessing(QObject *obj)
+{
+  Q_UNUSED(obj)
+  //By default do nothing
+}
+
+void DependencyContainer::newInjectProcessing(QObject *injectedObj, QObject *targetObj)
+{
+  Q_UNUSED(injectedObj)
+  Q_UNUSED(targetObj)
+  //By default do nothing
+  //Here can be implemented parenting logic, logging etc
 }
 
 void DependencyContainer::injectProperties(QObject* obj, const QString &name)
