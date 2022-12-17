@@ -95,7 +95,8 @@ QStringList DependencyContainer::allMetaInfo()
 QStringList DependencyContainer::allSingletonInfo()
 {
     QStringList lines;
-    foreach(QObject* obj, _singletonHash.values()){
+    QList<QObject*> values = _singletonHash.values();
+    foreach(QObject* obj, values){
         lines.append(QString("%1: %2").arg(obj->objectName(), obj->metaObject()->className()));
     }
     return lines;
