@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 #include "dependencycontainer.h"
 #include "abstractservice.h"
-#include "settingspropertyprovider.h"
+#include "settingspropertystore.h"
 
 //Dependency bean-names
 #define B_SERVICE_ONE "beanOne"
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     iocContainer->setPropertyValue("beanTwo.verboseMode", false);
 
     //SettingsPropertyProvider used QSettings as a source of properties
-//    iocContainer->setPropertyProvider(new SettingsPropertyProvider(new QSettings("app.ini", QSettings::IniFormat)));
+//    iocContainer->setPropertyProvider(new SettingsPropertyStore(new QSettings("app.ini", QSettings::IniFormat)));
 
     //It's fully normal to register several dependencies of one class
     iocContainer->registerDependency(B_SERVICE_ONE, CLASSMETA(ServiceImpl), InstanceMode::Singleton);

@@ -11,13 +11,15 @@
 
 #define INJECT_PREFIX "inject_"
 #define INJECT(Type, Name) Type _##Name; Q_INVOKABLE void inject_##Name(QObject* obj){ _##Name = static_cast<Type>(obj); }
-#define INJECT_INITIALIZE(Type, Member, Name) Q_INVOKABLE void inject_##Name##_into_##Member(QObject* obj){ Member = static_cast<Type>(obj); }
+#define INJECT_AS(Type, Member, Name) Type _##Member; Q_INVOKABLE void inject_##Member##_by_##Name(QObject* obj){ _##Member = static_cast<Type>(obj); }
+#define INJECT_INITIALIZE(Type, Member, Name) Q_INVOKABLE void inject_##Member##_by_##Name(QObject* obj){ Member = static_cast<Type>(obj); }
 #define CLASS(Type) Type::staticMetaObject.className()
 #define CLASSMETA(Type) &Type::staticMetaObject
 
 #define PRM_NAME "name"
 #define PRM_CLASS "class"
 #define PRM_MODE "mode"
+#define PRM_BEAN_NAME "beanName"
 #define PRM_CLASS_PREFIX "class_"
 
 #define ERR_ONLY_QOBJECT "Only QObject descedants allowed"
@@ -50,10 +52,10 @@ private:
     void addSuperClass(const QMetaObject *metaObj, QStringList &list) const;
 };
 
-class AbstractPropertyProvider
+class AbstractPropertyStore
 {
 public:
-    virtual ~AbstractPropertyProvider();
+    virtual ~AbstractPropertyStore();
 
     virtual void init(const QVariantHash &props) = 0;
     virtual void setValue(QString propName, QVariant propValue) = 0;
@@ -62,7 +64,7 @@ public:
     virtual void reset() = 0;
 };
 
-class VariantHashPropertyProvider : public AbstractPropertyProvider
+class VariantHashPropertyStore : public AbstractPropertyStore
 {
     // AbstractPropertyProvider interface
 public:
@@ -90,7 +92,7 @@ public:
     void removeSingleton(QString name);
     void removeDependency(QString name);
     //Container settings
-    void setPropertyProvider(AbstractPropertyProvider *propertyProvider);
+    void setPropertyProvider(AbstractPropertyStore *propertyProvider);
     void setErrorOnInjectFail(bool value);
     void setPropertyValue(QString propName, QVariant propValue);
     //Dependency info
@@ -99,8 +101,8 @@ public:
     QStringList namesByClass(QString className);
 
     //Dependency request
-    QObject* dependency(const QString &className, const QVariantHash &params);
-    QObject* dependency(const QString &name);
+    QObject* dependency(const QString &className, const QVariantHash &params, const QObject *arg = Q_NULLPTR);
+    QObject* dependency(const QString &name, const QObject *arg = Q_NULLPTR);
 
     template<class T>
     QStringList namesByClass(){
@@ -109,24 +111,29 @@ public:
     }
 
     template<class T>
-    T* dependency(const QVariantHash &params){
+    T* dependency(const QVariantHash &params, const QObject* arg = Q_NULLPTR){
         static_assert (std::is_base_of<QObject,T>::value, ERR_ONLY_QOBJECT);
-        return static_cast<T*>(dependency(CLASS(T), params));
+        return static_cast<T*>(dependency(CLASS(T), params, arg));
     }
     template<class T>
-    T* dependency(const QString &name){
+    T* dependency(const QString &name, const QObject* arg = Q_NULLPTR){
         static_assert (std::is_base_of<QObject,T>::value, ERR_ONLY_QOBJECT);
-        return static_cast<T*>(dependency(name));
+        return static_cast<T*>(dependency(name, arg));
     }
 signals:
 
+protected:
+    virtual QString dependencyCheck(const DependencyMeta* meta);
+    virtual bool dependencyFilter(const DependencyMeta* meta);
+    virtual void newInstanceProccessing(QObject* obj);
+    virtual void newInjectProcessing(QObject* injectedObj, QObject* targetObj);
 private:
     void injectProperties(QObject* obj, const QString &name = "");
     bool injectProperty(QObject* obj, QString propName, QString objPropName = "");
     QHash<QString, DependencyMeta*> _metaByName; //itemByName
     QMultiHash<QString, DependencyMeta*> _metaByClass;
     QHash<QString, QObject*> _singletonHash; //all instaciated singletons
-    AbstractPropertyProvider* _propertyProvider;
+    AbstractPropertyStore* _propertyProvider;
     bool _errorOnInjectFail = true;
 };
 

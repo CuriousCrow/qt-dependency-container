@@ -1,15 +1,15 @@
-#ifndef SETTINGSPROPERTYPROVIDER_H
-#define SETTINGSPROPERTYPROVIDER_H
+#ifndef SETTINGSPROPERTYSTORE_H
+#define SETTINGSPROPERTYSTORE_H
 
 #include <QObject>
 #include "dependencycontainer.h"
 #include <QSettings>
 
-class SettingsPropertyProvider : public AbstractPropertyProvider
+class SettingsPropertyStore : public AbstractPropertyStore
 {
 public:
-    SettingsPropertyProvider(QSettings *settings);
-    virtual ~SettingsPropertyProvider();
+    SettingsPropertyStore(QSettings *settings);
+    virtual ~SettingsPropertyStore();
 
     // AbstractPropertyProvider interface
 public:
@@ -22,4 +22,4 @@ private:
     QSettings* _settings;
 };
 
-#endif // SETTINGSPROPERTYPROVIDER_H
+#endif // SETTINGSPROPERTYSTORE_H
