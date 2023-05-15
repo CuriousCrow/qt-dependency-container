@@ -24,6 +24,7 @@ private slots:
     void testExternalSingleton();
     void testInject();
     void testConstructorArg();
+    void testPropertyInject();
 };
 
 InjectTest::InjectTest()
@@ -85,6 +86,20 @@ void InjectTest::testConstructorArg()
             = ioc.dependency<TestNoDefaultConstructorBean>(CONSTRUCTOR_ARG_BEAN_NAME, simpleObj);
     Q_ASSERT(bean != nullptr);
 }
+
+void InjectTest::testPropertyInject()
+{
+    QString propValue = "TestValue";
+
+    DependencyContainer ioc;
+    ioc.registerDependency(BEAN_NAME, CLASSMETA(TestComplexBean));
+    ioc.setPropertyValue("testProperty", propValue);
+    ioc.setErrorOnInjectFail(false);
+
+    TestComplexBean* obj = ioc.dependency<TestComplexBean>(BEAN_NAME);
+    Q_ASSERT(propValue == obj->testProperty());
+}
+
 
 QTEST_APPLESS_MAIN(InjectTest)
 
